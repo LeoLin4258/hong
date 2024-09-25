@@ -105,5 +105,3 @@ nextApp.prepare().then(() => {
     console.error("Uncaught exception:", error);
   });
 });
-
-
