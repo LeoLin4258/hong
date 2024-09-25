@@ -1,25 +1,28 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const next = require("next");
+const path = require("path"); // 添加这行来导入 path 模块
 
 const dev = process.env.NODE_ENV !== "production";
-const app = next({ dev });
-const handle = app.getRequestHandler();
+const nextApp = next({ dev });
+const handle = nextApp.getRequestHandler();
 
-// 移除 nextApp.prepare() 包装
-app.prepare().then(() => {
-  const server = express();
+nextApp.prepare().then(() => {
+  const app = express();
 
   console.log("Starting integrated server...");
 
   // Middleware to log incoming requests
-  server.use((req, res, nextMiddleware) => {
+  app.use((req, res, nextMiddleware) => {
     console.log(`[Express] Received request for ${req.url}`);
     nextMiddleware();
   });
 
+  // Serve Next.js static files
+  app.use("/_next", express.static(path.join(__dirname, ".next")));
+
   // Add this condition to exclude /dev path from proxy
-  server.use((req, res, next) => {
+  app.use((req, res, next) => {
     if (req.url.startsWith("/dev")) {
       return handle(req, res);
     }
@@ -27,7 +30,7 @@ app.prepare().then(() => {
   });
 
   // Proxy setup for '/' path (excluding /dev)
-  server.use(
+  app.use(
     "/",
     createProxyMiddleware({
       target: "https://hong.greatdk.com/",
@@ -82,19 +85,19 @@ app.prepare().then(() => {
   );
 
   // Handle all other routes with Next.js
-  server.all("*", (req, res) => {
+  app.all("*", (req, res) => {
     return handle(req, res);
   });
 
-  // 根据环境变量选择端口
-  const port = process.env.PORT || 3000;
-  server.listen(port, (err) => {
+  // Start the server
+  const port = 3001;
+  app.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
   });
 
   // Error handling
-  server.on("error", (error) => {
+  app.on("error", (error) => {
     console.error("An error occurred:", error);
   });
 
@@ -102,3 +105,5 @@ app.prepare().then(() => {
     console.error("Uncaught exception:", error);
   });
 });
+
+
