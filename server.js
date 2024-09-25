@@ -1,36 +1,33 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const next = require("next");
-const path = require("path"); // 添加这行来导入 path 模块
 
 const dev = process.env.NODE_ENV !== "production";
-const nextApp = next({ dev });
-const handle = nextApp.getRequestHandler();
+const app = next({ dev });
+const handle = app.getRequestHandler();
 
-nextApp.prepare().then(() => {
-  const app = express();
+// 移除 nextApp.prepare() 包装
+app.prepare().then(() => {
+  const server = express();
 
   console.log("Starting integrated server...");
 
   // Middleware to log incoming requests
-  app.use((req, res, nextMiddleware) => {
+  server.use((req, res, nextMiddleware) => {
     console.log(`[Express] Received request for ${req.url}`);
     nextMiddleware();
   });
 
-  // Serve Next.js static files
-  app.use("/_next", express.static(path.join(__dirname, ".next")));
-
   // Add this condition to exclude /dev path from proxy
-  app.use((req, res, next) => {
-    if (req.url.startsWith('/dev')) {
+  server.use((req, res, next) => {
+    if (req.url.startsWith("/dev")) {
       return handle(req, res);
     }
     next();
   });
 
   // Proxy setup for '/' path (excluding /dev)
-  app.use(
+  server.use(
     "/",
     createProxyMiddleware({
       target: "https://hong.greatdk.com/",
@@ -85,19 +82,19 @@ nextApp.prepare().then(() => {
   );
 
   // Handle all other routes with Next.js
-  app.all("*", (req, res) => {
+  server.all("*", (req, res) => {
     return handle(req, res);
   });
 
-  // Start the server
-  const port = 30001;
-  app.listen(port, (err) => {
+  // 根据环境变量选择端口
+  const port = process.env.PORT || 3000;
+  server.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
   });
 
   // Error handling
-  app.on("error", (error) => {
+  server.on("error", (error) => {
     console.error("An error occurred:", error);
   });
 
