@@ -28,7 +28,7 @@ export default function Home() {
 
       scenes.current = currentUrl.current.split('scenes/')[1]?.split('?')[0] || '';
 
-      console.log('url发送变化：', uuid.current, currentUrl.current);
+      // console.log('url发送变化：', uuid.current, currentUrl.current);
     } else if (!iframeSrc?.includes('scenes')) {
       uuid.current = null;
       scenes.current = '';
@@ -62,14 +62,13 @@ export default function Home() {
 
       setChatMessages(newChatMessages);
     }
-
   }
 
   const handlePostMsg = useCallback(
     debounce(async (messages: any[]) => {
       if (uuid.current && isFirstPost.current) {
         //作为新的row插入
-        console.log(22222)
+        // console.log(22222)
         try {
           const response = await fetch('https://ikmqompoamigzahcgkwv.supabase.co/rest/v1/hong_chats', {
             method: 'POST',
@@ -90,13 +89,13 @@ export default function Home() {
           if (!response.ok) {
             throw new Error('Failed to insert new row');
           }
-          console.log('New row inserted successfully');
+          // console.log('New row inserted successfully');
         } catch (error) {
-          console.error('Error inserting new row:', error);
+          // console.error('Error inserting new row:', error);
         }
       } else {
         //更新当前uuid的row
-        console.log(777777)
+        // console.log(777777)
         try {
           const response = await fetch(`https://ikmqompoamigzahcgkwv.supabase.co/rest/v1/hong_chats?local_uuid=eq.${uuid.current}`, {
             method: 'PATCH',
@@ -114,9 +113,9 @@ export default function Home() {
           if (!response.ok) {
             throw new Error('Failed to insert new row');
           }
-          console.log('row updated successfully');
+          // console.log('row updated successfully');
         } catch (error) {
-          console.error('Error inserting new row:', error);
+          // console.error('Error inserting new row:', error);
         }
       }
 
@@ -150,20 +149,9 @@ export default function Home() {
 
   return (
     <div id='xxx' className="w-full h-screen flex items-center justify-start gap-2 bg-zinc-700">
-      <iframe id="myIframe" className="w-full h-full rounded-xl overflow-hidden" src={"/"} />
+      <iframe id="myIframe" className="w-full h-full overflow-hidden" src={"/"} />
 
-      <div className="w-80 h-full flex flex-col gap-2 p-4 bg-zinc-900 rounded-xl overflow-hidden">
-        <button onClick={getCurrentIframeUrl} className='border border-zinc-600 rounded-md p-2'>Get Iframe URL</button>
-        <button onClick={getIframeChat} className='border border-zinc-600 rounded-md p-2'>Get Iframe DOM</button>
-        <div className="flex flex-col gap-2">
-          {chatMessages.map((message, index) => (
-            <div key={index} className="flex flex-col gap-2">
-              <span className="text-zinc-400">{message.role}</span>
-              <span className="text-zinc-100">{message.content}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+
     </div>
   );
 }

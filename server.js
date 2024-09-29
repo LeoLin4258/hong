@@ -10,11 +10,11 @@ const handle = nextApp.getRequestHandler();
 nextApp.prepare().then(() => {
   const app = express();
 
-  console.log("Starting integrated server...");
+  // console.log("Starting integrated server...");
 
   // Middleware to log incoming requests
   app.use((req, res, nextMiddleware) => {
-    console.log(`[Express] Received request for ${req.url}`);
+    // console.log(`[Express] Received request for ${req.url}`);
     nextMiddleware();
   });
 
@@ -23,7 +23,7 @@ nextApp.prepare().then(() => {
 
   // Add this condition to exclude /dev path from proxy
   app.use((req, res, next) => {
-    if (req.url.startsWith("/dev")) {
+    if (req.url.startsWith("/hong")) {
       return handle(req, res);
     }
     next();
@@ -38,8 +38,8 @@ nextApp.prepare().then(() => {
       logLevel: "debug",
       onProxyReq: (proxyReq, req, res) => {
         const { method, url, headers } = req;
-        console.log(`[Proxy] Proxying ${method} ${url}`);
-        console.log("Request headers:", JSON.stringify(headers, null, 2));
+        // console.log(`[Proxy] Proxying ${method} ${url}`);
+        // console.log("Request headers:", JSON.stringify(headers, null, 2));
 
         if (method === "POST") {
           let bodyData = "";
@@ -47,17 +47,17 @@ nextApp.prepare().then(() => {
             bodyData += chunk.toString();
           });
           req.on("end", () => {
-            console.log("Request body:", bodyData);
+            // console.log("Request body:", bodyData);
           });
         }
       },
       onProxyRes: (proxyRes, req, res) => {
-        console.log(`[Proxy] Received response for ${req.method} ${req.url}`);
-        console.log("Response Status Code:", proxyRes.statusCode);
-        console.log(
-          "Response Headers:",
-          JSON.stringify(proxyRes.headers, null, 2)
-        );
+        // console.log(`[Proxy] Received response for ${req.method} ${req.url}`);
+        // console.log("Response Status Code:", proxyRes.statusCode);
+        // console.log(
+        //   "Response Headers:",
+        //   JSON.stringify(proxyRes.headers, null, 2)
+        // );
 
         // Modify response headers to allow cross-origin access
         proxyRes.headers["Access-Control-Allow-Origin"] =
@@ -93,15 +93,15 @@ nextApp.prepare().then(() => {
   const port = 3001;
   app.listen(port, (err) => {
     if (err) throw err;
-    console.log(`Server running at http://localhost:${port}`);
+    // console.log(`Server running at http://localhost:${port}`);
   });
 
   // Error handling
   app.on("error", (error) => {
-    console.error("An error occurred:", error);
+    // console.error("An error occurred:", error);
   });
 
   process.on("uncaughtException", (error) => {
-    console.error("Uncaught exception:", error);
+    // console.error("Uncaught exception:", error);
   });
 });
